@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charities — GreenHeart</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+<body class="page-charities">
+
+    <nav class="navbar scrolled" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-icon">⛳</span>
+                <span class="logo-text">GreenHeart</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="charities.html" class="nav-link active">Charities</a>
+                <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+                <a href="index.html#prizes" class="nav-link">Prizes</a>
+            </div>
+            <div class="nav-actions">
+                <a href="login.html" class="btn-ghost">Log In</a>
+                <a href="signup.html" class="btn-primary">Join Now</a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-container">
+            <span class="section-eyebrow">Making a Difference</span>
+            <h1 class="page-header-title">Our Charity Partners</h1>
+            <p class="page-header-subtitle">Every subscription contributes to one of these incredible organisations. Choose your cause and every round you play gives back.</p>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <section class="charity-directory">
+        <div class="section-container">
+            <div class="directory-controls">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="charitySearch" placeholder="Search charities..." class="search-input">
+                </div>
+                <div class="filter-tabs" id="filterTabs">
+                    <button class="filter-tab active" data-filter="all">All</button>
+                    <button class="filter-tab" data-filter="health">Health</button>
+                    <button class="filter-tab" data-filter="children">Children</button>
+                    <button class="filter-tab" data-filter="animals">Animals</button>
+                    <button class="filter-tab" data-filter="community">Community</button>
+                    <button class="filter-tab" data-filter="environment">Environment</button>
+                </div>
+                <div class="sort-select-wrap">
+                    <select class="sort-select" id="charitySort">
+                        <option value="popular">Most Popular</option>
+                        <option value="raised">Most Raised</option>
+                        <option value="newest">Newest</option>
+                        <option value="az">A–Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="directory-stats-bar">
+                <span id="charityCount">12 charities</span>
+                <span>Total raised: <strong>₹890,200</strong></span>
+                <span>Total supporters: <strong>12,400</strong></span>
+            </div>
+
+            <!-- Charity Grid -->
+            <div class="charity-grid" id="charityGrid">
+
+                <div class="charity-dir-card" data-category="health">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-ribbon dir-card-icon"></i>
+                        <div class="dir-card-badge featured-badge">⭐ Featured</div>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">Macmillan Cancer Support</h3>
+                        <span class="dir-card-cat">Health</span>
+                        <p class="dir-card-desc">Providing specialist health care, information and financial support to people and families affected by cancer across the UK.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>840 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹124,800 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 84%"></div></div>
+                            <span class="progress-label">84% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html?id=macmillan" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html?charity=macmillan" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="children">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                        <i class="fas fa-child dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">NSPCC</h3>
+                        <span class="dir-card-cat">Children</span>
+                        <p class="dir-card-desc">Fighting for every childhood — protecting children from abuse and neglect, and providing services to help families in crisis.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>620 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹89,400 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 71%"></div></div>
+                            <span class="progress-label">71% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html?id=nspcc" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html?charity=nspcc" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="animals">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-paw dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">RSPCA</h3>
+                        <span class="dir-card-cat">Animals</span>
+                        <p class="dir-card-desc">Preventing cruelty and promoting kindness to all animals across England and Wales since 1824. The UK's oldest and largest animal charity.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>510 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹67,200 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 62%"></div></div>
+                            <span class="progress-label">62% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html?id=rspca" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html?charity=rspca" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="health">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-heart dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">British Heart Foundation</h3>
+                        <span class="dir-card-cat">Health</span>
+                        <p class="dir-card-desc">The UK's leading heart and circulatory disease charity, funding research to find cures and improve treatments for heart disease.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>480 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹58,900 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 58%"></div></div>
+                            <span class="progress-label">58% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="community">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                        <i class="fas fa-hands-helping dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">Age UK</h3>
+                        <span class="dir-card-cat">Community</span>
+                        <p class="dir-card-desc">Supporting older people to love later life. Providing information, advice, services and support to millions of older people across the UK.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>390 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹44,100 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 49%"></div></div>
+                            <span class="progress-label">49% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="environment">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #84cc16, #65a30d);">
+                        <i class="fas fa-leaf dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">WWF UK</h3>
+                        <span class="dir-card-cat">Environment</span>
+                        <p class="dir-card-desc">Working to stop the degradation of our planet's natural environment and building a future where people live in harmony with nature.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>360 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹38,400 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 45%"></div></div>
+                            <span class="progress-label">45% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="children">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                        <i class="fas fa-baby dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">Save the Children</h3>
+                        <span class="dir-card-cat">Children</span>
+                        <p class="dir-card-desc">Working to give children a healthy start in life, the opportunity to learn, and protection from harm globally.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>310 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹32,700 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 41%"></div></div>
+                            <span class="progress-label">41% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charity-dir-card" data-category="health">
+                    <div class="dir-card-header" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-brain dir-card-icon"></i>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name">Mind</h3>
+                        <span class="dir-card-cat">Health</span>
+                        <p class="dir-card-desc">Providing advice and support for those experiencing mental health problems, and campaigning to improve services and reduce stigma.</p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span>290 supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹28,100 raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 37%"></div></div>
+                            <span class="progress-label">37% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="charity-profile.html" class="btn-dir-view">View Profile</a>
+                            <a href="signup.html" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="no-results hidden" id="noResults">
+                <i class="fas fa-search"></i>
+                <p>No charities found matching your search.</p>
+                <button onclick="resetFilters()" class="btn-outline-dark">Clear Filters</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="charity-cta-banner">
+        <div class="section-container text-center">
+            <h2>Can't Find Your Cause?</h2>
+            <p>We're always looking to partner with new charities. Nominate an organisation you'd love to see on GreenHeart.</p>
+            <a href="signup.html" class="btn-hero-primary">Join & Nominate a Charity</a>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="index.html" class="nav-logo">
+                    <span class="logo-icon">⛳</span>
+                    <span class="logo-text">GreenHeart</span>
+                </a>
+                <p>Golf. Give. Win. The subscription platform combining performance, purpose, and prizes.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <a href="charities.html">Charities</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="index.html#prizes">Prize Draw</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Account</h4>
+                    <a href="signup.html">Sign Up</a>
+                    <a href="login.html">Log In</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 GreenHeart Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/charities.js"></script>
+</body>
+</html>
