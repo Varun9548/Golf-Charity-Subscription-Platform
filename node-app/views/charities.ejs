@@ -71,7 +71,14 @@
                         </div>
                         <div class="dir-card-actions">
                             <a href="/charity-profile?id=<%= charity.id %>" class="btn-dir-view">View Profile</a>
-                            <a href="/auth/signup?charity=<%= charity.id %>" class="btn-dir-support">Support This Charity</a>
+                            <% if (user) { %>
+                                <form action="/dashboard/charity/update" method="POST" style="display:inline; margin:0;">
+                                    <input type="hidden" name="charity_id" value="<%= charity.id %>">
+                                    <button type="submit" class="btn-dir-support" style="border:none; cursor:pointer;">Support This Charity</button>
+                                </form>
+                            <% } else { %>
+                                <a href="/auth/signup?charity=<%= charity.id %>" class="btn-dir-support">Support This Charity</a>
+                            <% } %>
                         </div>
                     </div>
                 </div>

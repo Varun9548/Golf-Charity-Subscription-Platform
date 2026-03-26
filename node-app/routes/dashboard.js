@@ -122,4 +122,16 @@ router.post('/profile/update', async (req, res) => {
     }
 });
 
+router.post('/charity/update', async (req, res) => {
+    const { charity_id } = req.body;
+    try {
+        const { error: updErr } = await supabase.from('users').update({ charity_id: parseInt(charity_id) }).eq('id', req.session.user.id);
+        if (updErr) throw updErr;
+        res.redirect('/dashboard#charity');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error updating charity');
+    }
+});
+
 module.exports = router;
