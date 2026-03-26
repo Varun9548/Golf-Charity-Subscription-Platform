@@ -13,7 +13,7 @@ const razorpay = new Razorpay({
 // Login Page
 router.get('/login', (req, res) => {
     if (req.session.user) return res.redirect('/dashboard');
-    res.render('login', { activePage: 'login', error: null });
+    res.render('login', { activePage: 'login', error: null, registered: req.query.registered === 'true' });
 });
 
 // Login POST
@@ -23,13 +23,13 @@ router.post('/login', async (req, res) => {
         const { data: users, error } = await supabase.from('users').select('*').eq('email', email);
         if (error) throw error;
         if (!users || users.length === 0) {
-            return res.render('login', { activePage: 'login', error: 'Invalid email or password' });
+            return res.render('login', { activePage: 'login', error: 'Invalid email or password', registered: false });
         }
         
         const user = users[0];
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-            return res.render('login', { activePage: 'login', error: 'Invalid email or password' });
+            return res.render('login', { activePage: 'login', error: 'Invalid email or password', registered: false });
         }
 
         req.session.user = {
@@ -125,7 +125,7 @@ router.post('/signup', async (req, res) => {
         res.redirect('/auth/login?registered=true');
     } catch (error) {
         console.error(error);
-        res.status(500).send('Server Error during registration');
+        res.status(500).json({ error: 'Server Error during registration', message: error.message, details: error.details, hint: error.hint, code: error.code });
     }
 });
 
