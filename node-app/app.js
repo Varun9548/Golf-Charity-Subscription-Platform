@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const pool = require('./config/db');
 
 const app = express();
@@ -16,11 +16,11 @@ app.set('trust proxy', 1); // Trust Vercel proxy for secure cookies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
+app.use(cookieSession({
+    name: 'session',
     secret: process.env.SESSION_SECRET || 'greenheart_secret_key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' } // secure cookies require HTTPS
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: process.env.NODE_ENV === 'production'
 }));
 
 // Global variable for views (user info)

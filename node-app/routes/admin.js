@@ -43,7 +43,7 @@ router.post('/login', async (req, res) => {
 
 // Admin Logout
 router.get('/logout', (req, res) => {
-    req.session.destroy();
+    req.session = null;
     res.redirect('/admin/login');
 });
 
