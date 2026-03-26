@@ -40,21 +40,14 @@ app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/admin', adminRoutes);
 
-// Database connection check
-pool.query('SELECT 1')
-    .then(() => {
-        console.log('MySQL Database Connected.');
-        if (process.env.NODE_ENV !== 'production' || process.env.VERCEL) {
-            // Optional local development listening
-            if (!process.env.VERCEL) {
-                app.listen(PORT, () => {
-                    console.log(`Server started on http://localhost:${PORT}`);
-                });
-            }
-        }
-    })
-    .catch((err) => {
-        console.error('Database connection failed:', err.message);
+// Supabase doesn't require a constant connection pool like MySQL.
+// We can just start the server directly.
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server started on http://localhost:${PORT}`);
     });
+}
+
+module.exports = app;
 
 module.exports = app;
