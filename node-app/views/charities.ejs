@@ -1,0 +1,98 @@
+<%- include('partials/header', { extraCss: null }) %>
+<%- include('partials/header', { extraCss: null }) %>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-container">
+            <span class="section-eyebrow">Making a Difference</span>
+            <h1 class="page-header-title">Our Charity Partners</h1>
+            <p class="page-header-subtitle">Every subscription contributes to one of these incredible organisations. Choose your cause and every round you play gives back.</p>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <section class="charity-directory">
+        <div class="section-container">
+            <div class="directory-controls">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="charitySearch" placeholder="Search charities..." class="search-input">
+                </div>
+                <div class="filter-tabs" id="filterTabs">
+                    <button class="filter-tab active" data-filter="all">All</button>
+                    <button class="filter-tab" data-filter="health">Health</button>
+                    <button class="filter-tab" data-filter="children">Children</button>
+                    <button class="filter-tab" data-filter="animals">Animals</button>
+                    <button class="filter-tab" data-filter="community">Community</button>
+                    <button class="filter-tab" data-filter="environment">Environment</button>
+                </div>
+                <div class="sort-select-wrap">
+                    <select class="sort-select" id="charitySort">
+                        <option value="popular">Most Popular</option>
+                        <option value="raised">Most Raised</option>
+                        <option value="newest">Newest</option>
+                        <option value="az">A–Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="directory-stats-bar">
+                <span id="charityCount"><%= charities.length %> charities</span>
+                <span>Total raised: <strong>₹890,200</strong></span>
+                <span>Total supporters: <strong>12,400</strong></span>
+            </div>
+
+            <!-- Charity Grid -->
+            <div class="charity-grid" id="charityGrid">
+                <% charities.forEach(charity => { %>
+                <div class="charity-dir-card" data-category="<%= charity.category.toLowerCase() %>">
+                    <% if (charity.id % 3 === 0) { %>
+                        <div class="dir-card-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <% } else if (charity.id % 3 === 1) { %>
+                        <div class="dir-card-header" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                    <% } else { %>
+                        <div class="dir-card-header" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <% } %>
+                        <i class="fas fa-heart dir-card-icon"></i>
+                        <% if (charity.featured) { %>
+                        <div class="dir-card-badge featured-badge">⭐ Featured</div>
+                        <% } %>
+                    </div>
+                    <div class="dir-card-body">
+                        <h3 class="dir-card-name"><%= charity.name %></h3>
+                        <span class="dir-card-cat"><%= charity.category %></span>
+                        <p class="dir-card-desc"><%= charity.description || 'Supporting ' + charity.category.toLowerCase() + ' initiatives.' %></p>
+                        <div class="dir-card-stats">
+                            <div class="dir-stat"><i class="fas fa-users"></i><span><%= charity.supporters || 0 %> supporters</span></div>
+                            <div class="dir-stat"><i class="fas fa-pound-sign"></i><span>₹<%= charity.total_raised || 0 %> raised</span></div>
+                        </div>
+                        <div class="dir-card-progress">
+                            <div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>
+                            <span class="progress-label">75% of monthly goal</span>
+                        </div>
+                        <div class="dir-card-actions">
+                            <a href="/charity-profile?id=<%= charity.id %>" class="btn-dir-view">View Profile</a>
+                            <a href="/auth/signup?charity=<%= charity.id %>" class="btn-dir-support">Support This Charity</a>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+
+            <div class="no-results hidden" id="noResults">
+                <i class="fas fa-search"></i>
+                <p>No charities found matching your search.</p>
+                <button onclick="resetFilters()" class="btn-outline-dark">Clear Filters</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="charity-cta-banner">
+        <div class="section-container text-center">
+            <h2>Can't Find Your Cause?</h2>
+            <p>We're always looking to partner with new charities. Nominate an organisation you'd love to see on GreenHeart.</p>
+            <a href="/auth/signup" class="btn-hero-primary">Join & Nominate a Charity</a>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

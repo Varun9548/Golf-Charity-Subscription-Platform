@@ -1,0 +1,350 @@
+<%- include('partials/header', { extraCss: null }) %>
+
+    <!-- Admin Sidebar -->
+    <aside class="sidebar admin-sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <a href="/">
+                <span class="logo-icon">⛳</span>
+                <span class="logo-text">GreenHeart</span>
+            </a>
+            <div class="admin-badge-pill">ADMIN</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-link active" onclick="showAdminSection('analytics', event)">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="#" class="sidebar-link" onclick="showAdminSection('users', event)">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+                <span class="sidebar-count"><%= users.length %></span>
+            </a>
+            <a href="#" class="sidebar-link" onclick="showAdminSection('draws', event)">
+                <i class="fas fa-random"></i>
+                <span>Draw Management</span>
+            </a>
+            <a href="#" class="sidebar-link" onclick="showAdminSection('charities', event)">
+                <i class="fas fa-hand-holding-heart"></i>
+                <span>Charities</span>
+                <span class="sidebar-count"><%= charities ? charities.length : 0 %></span>
+            </a>
+            <a href="#" class="sidebar-link" onclick="showAdminSection('winners', event)">
+                <i class="fas fa-trophy"></i>
+                <span>Winners</span>
+                <span class="sidebar-count red">0</span>
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <div class="user-avatar-sm admin-av"><%= user.first_name[0] %><%= user.last_name[0] %></div>
+                <div class="user-info-sm">
+                    <span class="user-name-sm"><%= user.first_name %> <%= user.last_name %></span>
+                    <span class="user-plan-sm">Super Admin</span>
+                </div>
+            </div>
+            <a href="/auth/logout" class="sidebar-logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="dash-mobile-header admin-mobile-header">
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="admin-mobile-title">Admin Panel</span>
+        <div class="mobile-user-avatar admin-av">AD</div>
+    </header>
+
+    <main class="dashboard-main">
+        <!-- Analytics Section -->
+        <section class="dash-section active" id="admin-analytics">
+            <div class="dash-header">
+                <div>
+                    <h1 class="dash-title">Platform Overview</h1>
+                    <p class="dash-subtitle">Last updated: <%= new Date().toLocaleDateString() %></p>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="stat-cards admin-kpis">
+                <div class="stat-card">
+                    <div class="stat-card-icon blue"><i class="fas fa-users"></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value"><%= metrics.totalSubscribers %></span>
+                        <span class="stat-card-label">Total Subscribers</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon green"><i class="fas fa-pound-sign"></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value">₹<%= metrics.monthlyRevenue.toLocaleString() %></span>
+                        <span class="stat-card-label">Monthly Revenue</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon gold"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value">₹<%= metrics.totalPrizePool.toLocaleString() %></span>
+                        <span class="stat-card-label">Total Prize Pool</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon purple"><i class="fas fa-hand-holding-heart"></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value">₹<%= Math.floor(metrics.charityContributions).toLocaleString() %></span>
+                        <span class="stat-card-label">Charity Allocated</span>
+                    </div>
+                </div>
+            </div>
+            <p>Full analytics dashboards for granular Draw Statistics are pending advanced charting integrations.</p>
+        </section>
+
+        <!-- Users Section -->
+        <section class="dash-section" id="admin-users">
+            <div class="dash-header">
+                <h1 class="dash-title">User Management</h1>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Plan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <% users.forEach(u => { %>
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar-sm" style="background: #10b981;"><%= u.first_name[0] %><%= u.last_name[0] %></div>
+                                    <div>
+                                        <strong><%= u.first_name %> <%= u.last_name %></strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><%= u.email %></td>
+                            <td><span class="plan-pill <%= u.plan %>"><%= u.plan %></span></td>
+                            <td>
+                                <span class="status-pill active">Active</span>
+                                <% if(!u.is_admin) { %>
+                                    <button class="btn-table-action" style="margin-left: 10px; padding: 4px 8px; border-radius: 4px;" onclick="openUserEditModal('<%= u.id %>')" title="Edit User">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="btn-table-action red" style="margin-left: 5px; padding: 4px 8px; border-radius: 4px;" onclick="deleteUser(this, '<%= u.id %>')" title="Delete User">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- Draw Management Section -->
+        <section class="dash-section" id="admin-draws">
+            <div class="dash-header">
+                <h1 class="dash-title">Draw Management</h1>
+            </div>
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <h3>Configure & Simulate</h3>
+                </div>
+                <div id="simPanel" style="margin-bottom: 2rem;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;">
+                        <label style="color:#e2e8f0; font-size:0.9rem;">Draw Logic:</label>
+                        <select id="drawAlgorithm" class="form-input" style="width: auto; background:#0c1222; color:white; border-color:#1e293b;">
+                            <option value="random">Pure Random (Crypto)</option>
+                            <option value="algorithm">Smart Distribution Algorithm</option>
+                        </select>
+                        <button class="btn-dash-primary" onclick="runSimulation()">
+                            <i class="fas fa-play"></i> Run Simulation
+                        </button>
+                    </div>
+                    <div id="simResultsContainer"></div>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; color:#e2e8f0;">Recent Draws</h3>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead><tr><th>ID</th><th>Date</th><th>Winning Numbers</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            <% draws.forEach(d => { %>
+                                <tr>
+                                    <td>#<%= d.id %></td>
+                                    <td><%= new Date(d.draw_date).toLocaleDateString() %></td>
+                                    <td><strong style="letter-spacing: 2px; color:#e2e8f0;"><%= d.winning_numbers %></strong></td>
+                                    <td><span class="status-pill <%= d.status === 'published' ? 'active' : 'pending' %>"><%= d.status.toUpperCase() %></span></td>
+                                    <td>
+                                        <% if(d.status === 'pending') { %>
+                                            <button class="btn-table-action green" onclick="publishDraw(<%= d.id %>)">Publish</button>
+                                        <% } else { %>
+                                            <span style="color:#64748b; font-size:0.85rem;"><i class="fas fa-check"></i> Published</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charity Management Section -->
+        <section class="dash-section" id="admin-charities">
+            <div class="dash-header">
+                <h1 class="dash-title">Charity Partners</h1>
+                <button class="btn-dash-primary" onclick="openCharityModal()"><i class="fas fa-plus"></i> Add Charity</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Raised</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        <% charities.forEach(c => { %>
+                            <tr>
+                                <td>#<%= c.id %></td>
+                                <td><strong style="color:#e2e8f0;"><%= c.name %></strong></td>
+                                <td><%= c.category %></td>
+                                <td>₹<%= c.raised_amount || 0 %></td>
+                                <td>
+                                    <button class="btn-table-action" onclick="openCharityModal(<%= JSON.stringify(c).replace(/"/g, '&quot;') %>)"><i class="fas fa-pen"></i></button>
+                                    <button class="btn-table-action red" onclick="deleteCharity(<%= c.id %>)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Winners Section -->
+        <section class="dash-section" id="admin-winners">
+            <div class="dash-header">
+                <h1 class="dash-title">Winners & Payouts</h1>
+            </div>
+            <div class="winners-filter-row">
+                <button class="filter-tab active" onclick="filterWinners('all', this)">All</button>
+                <button class="filter-tab" onclick="filterWinners('pending', this)">Pending Proof</button>
+                <button class="filter-tab" onclick="filterWinners('approved', this)">Awaiting Payout</button>
+                <button class="filter-tab" onclick="filterWinners('paid', this)">Paid</button>
+            </div>
+            
+            <div class="winners-admin-grid">
+                <% if(winners && winners.length > 0) { %>
+                    <% winners.forEach(w => { %>
+                        <div class="winner-card-admin" data-status="<%= w.status %>" data-id="<%= w.id %>">
+                            <div class="wca-header">
+                                <div>
+                                    <h4 style="margin:0; color:#e2e8f0; font-size:1.05rem;"><%= w.first_name %> <%= w.last_name %></h4>
+                                    <span style="font-size:0.8rem; color:#94a3b8;">Draw ID: <%= w.draw_id %></span>
+                                </div>
+                                <div class="result-badge <%= w.status === 'pending' ? 'review' : (w.status === 'approved' ? 'approved' : (w.status === 'paid' ? 'won' : 'no-win')) %>">
+                                    <%= w.status.toUpperCase() %>
+                                </div>
+                            </div>
+                            <div class="wca-body">
+                                <div class="wca-stat">
+                                    <span>Matches</span>
+                                    <strong><%= w.match_count %> Balls</strong>
+                                </div>
+                                <div class="wca-stat">
+                                    <span>Prize</span>
+                                    <strong style="color:#10b981;">₹<%= w.amount %></strong>
+                                </div>
+                            </div>
+                            <div class="winner-card-actions" id="actions-<%= w.id %>">
+                                <% if(w.status === 'pending') { %>
+                                    <% if(w.proof_image) { %>
+                                        <a href="<%= w.proof_image %>" target="_blank" class="btn-table-action" style="text-decoration:none;"><i class="fas fa-file-image"></i> View Proof</a>
+                                    <% } else { %>
+                                        <span style="font-size:0.8rem; color:#94a3b8; padding-right:10px;">Awaiting Proof</span>
+                                    <% } %>
+                                    <button class="btn-table-action green" onclick="approveWinner(this, '<%= w.id %>')"><i class="fas fa-check"></i> Approve</button>
+                                    <button class="btn-table-action red" onclick="rejectWinner(this, '<%= w.id %>')"><i class="fas fa-times"></i> Reject</button>
+                                <% } else if (w.status === 'approved') { %>
+                                    <button class="btn-table-action green" onclick="markPaid(this, '<%= w.id %>')"><i class="fas fa-rupee-sign"></i> Mark Paid</button>
+                                <% } else if (w.status === 'paid') { %>
+                                    <span style="color: #10b981; font-size: 0.85rem;"><i class="fas fa-check-circle"></i> Payment Sent</span>
+                                <% } else { %>
+                                    <span style="color: #f87171; font-size: 0.85rem;"><i class="fas fa-times-circle"></i> Rejected</span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p style="color:#94a3b8;">No winners available currently.</p>
+                <% } %>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Charity Modal -->
+    <div class="modal-overlay hidden" id="charityModal">
+        <div class="modal" style="background:#131c2e; padding:2rem; border-radius:12px; width:400px; color:#e2e8f0;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
+                <h3 id="charityModalTitle">Add Charity</h3>
+                <button onclick="closeCharityModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.2rem;"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="charityForm" method="POST" action="/admin/charities/add">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="font-size:0.85rem;">Name</label>
+                    <input type="text" name="name" id="charityName" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b;" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="font-size:0.85rem;">Category</label>
+                    <input type="text" name="category" id="charityCat" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b;" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                    <label style="font-size:0.85rem;">Description / Media Content</label>
+                    <textarea name="description" id="charityDesc" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b; height:80px; font-family:inherit; padding:10px;" required></textarea>
+                </div>
+                <button type="submit" class="btn-form-primary">Save Charity</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Edit Modal -->
+    <div class="modal-overlay hidden" id="userEditModal">
+        <div class="modal" style="background:#131c2e; padding:2rem; border-radius:12px; width:600px; max-width:90vw; color:#e2e8f0; max-height:90vh; overflow-y:auto; position:relative;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
+                <h3>Edit User Profile</h3>
+                <button onclick="closeUserEditModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.2rem;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="userEditForm" onsubmit="submitUserEdit(event)">
+                <input type="hidden" id="editUserId">
+                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                    <div class="form-group"><label style="font-size:0.85rem;">First Name</label><input type="text" id="editFirstName" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b;" required></div>
+                    <div class="form-group"><label style="font-size:0.85rem;">Last Name</label><input type="text" id="editLastName" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b;" required></div>
+                </div>
+                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+                    <div class="form-group"><label style="font-size:0.85rem;">Email</label><input type="email" id="editEmail" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b;" required></div>
+                    <div class="form-group">
+                        <label style="font-size:0.85rem;">Subscription Plan</label>
+                        <select id="editPlan" class="form-input" style="background:#0c1222; color:white; border-color:#1e293b;">
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-form-primary" style="margin-bottom:2rem;">Save Profile Settings</button>
+            </form>
+
+            <h4 style="border-bottom:1px solid #1e293b; padding-bottom:0.5rem; margin-bottom:1rem;">User Scores</h4>
+            <div id="userScoresList" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+            
+            <h4 style="border-bottom:1px solid #1e293b; padding-bottom:0.5rem; margin-top:1.5rem; margin-bottom:0.5rem;">Media & Verifications</h4>
+            <p style="color:#64748b; font-size:0.85rem;">Winner proof submissions are verified in the Winners Management tab. Any supporting media content uploaded by this user will appear here.</p>
+        </div>
+    </div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,139 @@
+<%- include('partials/header', { extraCss: null }) %>
+
+    <div class="auth-layout" style="padding-top: 80px;">
+        <div class="auth-panel-left">
+            <div class="auth-left-content">
+                <h2>Join 12,400 golfers playing with purpose</h2>
+                <div class="auth-benefits">
+                    <div class="auth-benefit">
+                        <div class="benefit-icon"><i class="fas fa-trophy"></i></div>
+                        <div>
+                            <strong>Monthly Prize Draws</strong>
+                            <p>Your scores are your lottery numbers — up to ₹17K jackpot</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-panel-right">
+            <div class="auth-form-container">
+                <% if (error) { %>
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><%= error %></span>
+                    </div>
+                <% } %>
+                <form class="auth-form" method="POST" action="/auth/signup" id="mainSignupForm">
+                    <!-- Hidden inputs to store multi-step data -->
+                    <input type="hidden" name="plan" id="hiddenPlan" value="monthly">
+                    <input type="hidden" name="charity_id" id="hiddenCharityId" value="">
+                    <input type="hidden" name="givingPct" id="hiddenGivingPct" value="10">
+                    
+                    <div class="signup-progress">
+                        <div class="signup-step active" data-step="1">
+                            <div class="step-circle">1</div><span>Account</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="signup-step" data-step="2">
+                            <div class="step-circle">2</div><span>Plan</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="signup-step" data-step="3">
+                            <div class="step-circle">3</div><span>Charity</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Account Details -->
+                    <div class="signup-form-step active" id="step1">
+                        <h2 class="form-title">Create Your Account</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <div class="form-checkbox" style="margin-bottom: 20px;">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <label for="agreeTerms">I agree to the <a href="#">Terms of Service</a> & <a href="#">Privacy Policy</a></label>
+                        </div>
+                        <button type="button" class="btn-form-primary" onclick="goToStep(2)">Continue</button>
+                    </div>
+
+                    <!-- Step 2: Choose Plan -->
+                    <div class="signup-form-step" id="step2">
+                        <h2 class="form-title">Choose Your Plan</h2>
+                        <div class="plan-picker">
+                            <div class="plan-option selected" id="planMonthly" onclick="selectPlan('monthly')">
+                                <div class="plan-option-name">Monthly</div>
+                                <div class="plan-option-price">₹999/month</div>
+                            </div>
+                            <div class="plan-option" id="planYearly" onclick="selectPlan('yearly')">
+                                <div class="plan-option-name">Yearly</div>
+                                <div class="plan-option-price">₹8999/year</div>
+                            </div>
+                        </div>
+                        <div class="form-nav-buttons">
+                            <button type="button" class="btn-form-ghost" onclick="goToStep(1)">Back</button>
+                            <button type="button" class="btn-form-primary" onclick="goToStep(3)">Continue</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Choose Charity -->
+                    <div class="signup-form-step" id="step3">
+                        <h2 class="form-title">Choose Your Charity</h2>
+                        <div class="charity-picker" id="charityPicker">
+                            <% charities.forEach((charity, i) => { %>
+                                <div class="charity-option <%= i === 0 ? 'selected' : '' %>" data-charity="<%= charity.id %>" onclick="selectCharityItem(this, '<%= charity.id %>')">
+                                    <div class="charity-option-info">
+                                        <strong><%= charity.name %></strong>
+                                        <span><%= charity.category %></span>
+                                    </div>
+                                    <div class="charity-option-check"><i class="fas fa-check-circle"></i></div>
+                                </div>
+                            <% }) %>
+                        </div>
+                        
+                        <div class="form-nav-buttons">
+                            <button type="button" class="btn-form-ghost" onclick="goToStep(2)">Back</button>
+                            <!-- Submit instead of going to step 4 since we skip payment processing logic -->
+                            <button type="submit" class="btn-form-primary">Complete Signup</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Custom script to handle dynamic form submission and updates
+        function selectPlan(plan) {
+            document.getElementById('hiddenPlan').value = plan;
+            document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById(plan === 'monthly' ? 'planMonthly' : 'planYearly').classList.add('selected');
+        }
+        function selectCharityItem(el, id) {
+            document.getElementById('hiddenCharityId').value = id;
+            document.querySelectorAll('.charity-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+        // Initialize hidden charity if there are charities
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstCharity = document.querySelector('.charity-option');
+            if (firstCharity) {
+                document.getElementById('hiddenCharityId').value = firstCharity.getAttribute('data-charity');
+            }
+        });
+    </script>
+<%- include('partials/footer') %>

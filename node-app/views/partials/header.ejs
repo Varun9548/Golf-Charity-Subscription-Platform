@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenHeart — Golf. Give. Win.</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <% if (typeof extraCss !== 'undefined') { %>
+        <link rel="stylesheet" href="<%= extraCss %>">
+    <% } %>
+</head>
+<body class="page-<%= activePage %>">
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">⛳</span>
+                <span class="logo-text">GreenHeart</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link <%= activePage === 'home' ? 'active' : '' %>">Home</a>
+                <a href="/charities" class="nav-link <%= activePage === 'charities' ? 'active' : '' %>">Charities</a>
+                <a href="/#how-it-works" class="nav-link">How It Works</a>
+                <a href="/#prizes" class="nav-link">Prizes</a>
+            </div>
+            <div class="nav-actions">
+                <% if (user) { %>
+                    <% if (user.is_admin) { %>
+                        <a href="/admin" class="btn-ghost">Admin Panel</a>
+                    <% } else { %>
+                        <a href="/dashboard" class="btn-ghost">Dashboard</a>
+                    <% } %>
+                    <a href="/auth/logout" class="btn-primary">Log Out</a>
+                <% } else { %>
+                    <a href="/auth/login" class="btn-ghost">Log In</a>
+                    <a href="/auth/signup" class="btn-primary">Join Now</a>
+                <% } %>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>

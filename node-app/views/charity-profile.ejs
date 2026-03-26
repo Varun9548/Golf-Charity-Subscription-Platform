@@ -1,0 +1,103 @@
+<%- include('partials/header', { extraCss: null }) %>
+
+    <!-- Charity Hero Banner -->
+    <div class="charity-profile-hero" style="background: <%= charity.id % 3 === 0 ? 'linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%)' : (charity.id % 3 === 1 ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 60%, #4338ca 100%)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 60%, #b45309 100%)') %>;">
+        <div class="cph-container">
+            <div class="cph-back">
+                <a href="/charities"><i class="fas fa-arrow-left"></i> Back to Charities</a>
+            </div>
+            <div class="cph-badge-row">
+                <% if(charity.featured) { %><span class="cph-badge">⭐ Featured Charity</span><% } %>
+                <span class="cph-badge"><%= charity.category %></span>
+            </div>
+            <div class="cph-icon-circle">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h1 class="cph-title"><%= charity.name %></h1>
+            <p class="cph-subtitle"><%= charity.description %></p>
+            <div class="cph-stats-row">
+                <div class="cph-stat">
+                    <span class="cph-stat-num"><%= charity.supporters || 0 %></span>
+                    <span>GreenHeart supporters</span>
+                </div>
+                <div class="cph-stat">
+                    <span class="cph-stat-num">₹<%= charity.total_raised || 0 %></span>
+                    <span>Raised via GreenHeart</span>
+                </div>
+                <div class="cph-stat">
+                    <span class="cph-stat-num">₹1M+</span>
+                    <span>Total funding raised</span>
+                </div>
+            </div>
+            <a href="/auth/signup?charity=<%= charity.id %>" class="btn-hero-primary">
+                Support <%= charity.name %> — Join GreenHeart <i class="fas fa-heart"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="charity-profile-content">
+        <div class="section-container">
+            <div class="cpc-grid">
+
+                <!-- Main Content -->
+                <div class="cpc-main">
+                    <div class="cpc-section">
+                        <h2>About <%= charity.name %></h2>
+                        <p><%= charity.description %></p>
+                        <p>Join our community in supporting <%= charity.name %> by playing golf and winning prizes.</p>
+                    </div>
+
+                    <div class="cpc-section">
+                        <h2>Our Impact</h2>
+                        <div class="impact-cards">
+                            <div class="impact-card-item">
+                                <i class="fas fa-stethoscope"></i>
+                                <strong>8,000+</strong>
+                                <span>Volunteers across the UK</span>
+                            </div>
+                            <div class="impact-card-item">
+                                <i class="fas fa-phone"></i>
+                                <strong>300,000</strong>
+                                <span>Support calls answered annually</span>
+                            </div>
+                            <div class="impact-card-item">
+                                <i class="fas fa-pound-sign"></i>
+                                <strong>₹43M</strong>
+                                <span>In financial grants last year</span>
+                            </div>
+                            <div class="impact-card-item">
+                                <i class="fas fa-users"></i>
+                                <strong>3.5M</strong>
+                                <span>People reached every year</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="cpc-sidebar">
+                    <div class="cpc-sidebar-card">
+                        <h3>Support This Charity</h3>
+                        <p>Join GreenHeart and allocate your subscription contribution to <%= charity.name %>.</p>
+                        <div class="cpc-giving-breakdown">
+                            <div class="cg-row">
+                                <span>Monthly Plan</span>
+                                <strong>₹9.99</strong>
+                            </div>
+                            <div class="cg-row">
+                                <span>10% to <%= charity.name %></span>
+                                <strong class="green-text">₹1.00/month</strong>
+                            </div>
+                        </div>
+                        <a href="/auth/signup?charity=<%= charity.id %>" class="btn-form-primary" style="display: block; text-align: center; margin-top: 1rem;">
+                            Join & Support <%= charity.name %>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+<%- include('partials/footer') %>

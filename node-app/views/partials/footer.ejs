@@ -1,0 +1,64 @@
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="/" class="nav-logo">
+                    <span class="logo-icon">⛳</span>
+                    <span class="logo-text">GreenHeart</span>
+                </a>
+                <p>Golf. Give. Win. The subscription platform combining performance, purpose, and prizes.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <a href="/charities">Charities</a>
+                    <a href="/#how-it-works">How It Works</a>
+                    <a href="/#prizes">Prize Draw</a>
+                    <a href="/#pricing">Pricing</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Account</h4>
+                    <% if (user) { %>
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/auth/logout">Log Out</a>
+                    <% } else { %>
+                        <a href="/auth/signup">Sign Up</a>
+                        <a href="/auth/login">Log In</a>
+                    <% } %>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Cookie Policy</a>
+                    <a href="#">Draw Rules</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 GreenHeart Ltd. All rights reserved. GreenHeart is a registered platform. Draw results are final.</p>
+        </div>
+    </footer>
+
+    <% if (activePage === 'dashboard') { %>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="/js/dashboard.js"></script>
+    <% } else if (activePage === 'admin') { %>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="/js/admin.js"></script>
+    <% } else if (activePage === 'charities') { %>
+        <script src="/js/charities.js"></script>
+    <% } else if (activePage === 'login') { %>
+        <script src="/js/login.js"></script>
+    <% } else if (activePage === 'signup') { %>
+        <script src="/js/signup.js"></script>
+    <% } %>
+    
+    <script src="/js/main.js"></script>
+</body>
+</html>
