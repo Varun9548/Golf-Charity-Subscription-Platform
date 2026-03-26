@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
+const supabase = require('../config/db');
 const multer = require('multer');
 const path = require('path');
 
@@ -23,28 +23,32 @@ router.get('/', async (req, res) => {
     try {
         const userId = req.session.user.id;
         // Get full user info
-        const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [userId]);
-        const user = users[0];
+        const { data: users, error: uErr } = await supabase.from('users').select('*').eq('id', userId);
+        if (uErr) throw uErr;
+        const user = users && users.length > 0 ? users[0] : null;
             
         // Get user's charity info
         let charity = null;
         if (user && user.charity_id) {
-            const [charities] = await pool.query('SELECT * FROM charities WHERE id = ?', [user.charity_id]);
-            if (charities.length > 0) charity = charities[0];
+            const { data: charities } = await supabase.from('charities').select('*').eq('id', user.charity_id);
+            if (charities && charities.length > 0) charity = charities[0];
         }
 
         // Get user's scores
-        const [scores] = await pool.query('SELECT * FROM scores WHERE user_id = ? ORDER BY date DESC LIMIT 5', [userId]);
+        const { data: scores } = await supabase.from('scores').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(5);
 
         // Get draws and winnings
-        const [draws] = await pool.query('SELECT * FROM draws ORDER BY draw_date DESC LIMIT 10');
-        const [winnings] = await pool.query(`
-            SELECT w.*, d.draw_date, d.winning_numbers 
-            FROM winners w 
-            JOIN draws d ON w.draw_id = d.id 
-            WHERE w.user_id = ? 
-            ORDER BY w.id DESC
-        `, [userId]);
+        const { data: draws } = await supabase.from('draws').select('*').order('draw_date', { ascending: false }).limit(10);
+        
+        // Supabase foreign key join
+        const { data: winningsRaw, error: wErr } = await supabase.from('winners').select('*, draws(draw_date, winning_numbers)').eq('user_id', userId).order('id', { ascending: false });
+        if (wErr) throw wErr;
+        
+        const winnings = winningsRaw ? winningsRaw.map(w => ({
+            ...w,
+            draw_date: w.draws?.draw_date,
+            winning_numbers: w.draws?.winning_numbers
+        })) : [];
 
         res.render('dashboard', { 
             activePage: 'dashboard', 
@@ -63,10 +67,13 @@ router.get('/', async (req, res) => {
 router.post('/scores/add', async (req, res) => {
     const { score, course_name, played_at } = req.body;
     try {
-        await pool.query(
-            'INSERT INTO scores (user_id, score, course_name, date) VALUES (?, ?, ?, ?)',
-            [req.session.user.id, score, course_name, played_at || new Date().toISOString().split('T')[0]]
-        );
+        const { error: insErr } = await supabase.from('scores').insert([{ 
+            user_id: req.session.user.id, 
+            score: parseInt(score), 
+            course_name, 
+            date: played_at || new Date().toISOString().split('T')[0] 
+        }]);
+        if (insErr) throw insErr;
         res.redirect('/dashboard');
     } catch (err) {
         console.error(err);
@@ -76,7 +83,8 @@ router.post('/scores/add', async (req, res) => {
 
 router.post('/scores/delete/:id', async (req, res) => {
     try {
-        await pool.query('DELETE FROM scores WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
+        const { error: delErr } = await supabase.from('scores').delete().eq('id', req.params.id).eq('user_id', req.session.user.id);
+        if (delErr) throw delErr;
         res.redirect('/dashboard');
     } catch (err) {
         console.error(err);
@@ -88,8 +96,9 @@ router.post('/winnings/:id/proof', upload.single('proof_image'), async (req, res
     try {
         if (!req.file) return res.status(400).send('No file uploaded');
         const proofUrl = '/uploads/' + req.file.filename;
-        // The winner validation relies on proof image path; keeping status pending for review
-        await pool.query('UPDATE winners SET proof_image = ? WHERE id = ? AND user_id = ?', [proofUrl, req.params.id, req.session.user.id]);
+        
+        const { error: updErr } = await supabase.from('winners').update({ proof_image: proofUrl }).eq('id', req.params.id).eq('user_id', req.session.user.id);
+        if (updErr) throw updErr;
         res.redirect('/dashboard#winnings');
     } catch (err) {
         console.error(err);
@@ -100,7 +109,9 @@ router.post('/winnings/:id/proof', upload.single('proof_image'), async (req, res
 router.post('/profile/update', async (req, res) => {
     const { first_name, last_name, email } = req.body;
     try {
-        await pool.query('UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?', [first_name, last_name, email, req.session.user.id]);
+        const { error: updUserErr } = await supabase.from('users').update({ first_name, last_name, email }).eq('id', req.session.user.id);
+        if (updUserErr) throw updUserErr;
+        
         req.session.user.first_name = first_name;
         req.session.user.last_name = last_name;
         req.session.user.email = email;

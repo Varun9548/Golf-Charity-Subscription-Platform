@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const pool = require('../config/db');
+const supabase = require('../config/db');
 
 // Admin Login Page
 router.get('/login', (req, res) => {
@@ -13,8 +13,10 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const [users] = await pool.query('SELECT * FROM users WHERE email = ? AND is_admin = TRUE', [email]);
-        if (users.length === 0) {
+        const { data: users, error } = await supabase.from('users').select('*').eq('email', email).eq('is_admin', true);
+        if (error) throw error;
+        
+        if (!users || users.length === 0) {
             return res.render('admin-login', { activePage: 'admin-login', error: 'Invalid admin credentials' });
         }
         
@@ -56,19 +58,20 @@ router.use((req, res, next) => {
 router.get('/', async (req, res) => {
     try {
         // Fetch users
-        const [users] = await pool.query(`
-            SELECT u.id, u.first_name, u.last_name, u.email, u.plan, u.is_admin, u.created_at, c.name as charity_name 
-            FROM users u 
-            LEFT JOIN charities c ON u.charity_id = c.id 
-            ORDER BY u.created_at DESC
-        `);
+        const { data: usersRaw, error: uErr } = await supabase.from('users').select('*, charities(name)').order('created_at', { ascending: false });
+        if(uErr) throw uErr;
+        const users = usersRaw ? usersRaw.map(u => ({ ...u, charity_name: u.charities?.name })) : [];
         
-        // Fetch winners using explicit group_concat to prevent duplicate row explosions or just distinct query
-        const [winners] = await pool.query('SELECT w.*, u.first_name, u.last_name FROM winners w JOIN users u ON w.user_id = u.id ORDER BY w.id DESC');
+        // Fetch winners
+        const { data: winnersRaw, error: wErr } = await supabase.from('winners').select('*, users(first_name, last_name)').order('id', { ascending: false });
+        if(wErr) throw wErr;
+        const winners = winnersRaw ? winnersRaw.map(w => ({ ...w, first_name: w.users?.first_name, last_name: w.users?.last_name })) : [];
         
-        const [draws] = await pool.query('SELECT * FROM draws ORDER BY draw_date DESC');
-        const [[prizePoolObj]] = await pool.query('SELECT SUM(amount) as total FROM winners WHERE status != "rejected"');
-        const [charities] = await pool.query('SELECT * FROM charities ORDER BY name ASC');
+        const { data: draws } = await supabase.from('draws').select('*').order('draw_date', { ascending: false });
+        
+        const totalPrizePool = winners.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + Number(w.amount), 0);
+        
+        const { data: charities } = await supabase.from('charities').select('*').order('name', { ascending: true });
 
         // Calculate Revenue and Charity Metrics accurately based on plan and giving_pct
         let monthlyRevenue = 0;
@@ -85,14 +88,14 @@ router.get('/', async (req, res) => {
             activePage: 'admin', 
             users, 
             winners,
-            draws,
-            charities,
+            draws: draws || [],
+            charities: charities || [],
             metrics: {
                 totalSubscribers: users.filter(u => !u.is_admin).length,
                 monthlyRevenue: monthlyRevenue,
                 charityContributions: charityTotal,
-                totalPrizePool: prizePoolObj.total || 0,
-                totalDraws: draws.length
+                totalPrizePool: totalPrizePool,
+                totalDraws: draws ? draws.length : 0
             }
         });
     } catch (err) {
@@ -113,48 +116,43 @@ router.post('/draws/simulate', async (req, res) => {
         numbers.sort((a, b) => b - a);
         const winningStr = numbers.join(',');
 
-        // Current real month logic for date
         const drawDate = new Date().toISOString().split('T')[0];
-
-        // Use algorithm choice if passed
-        const { algorithm } = req.body || { algorithm: 'random' };
         
         // Ensure no pending draw exists, or we replace it
-        await pool.query("DELETE FROM draws WHERE status = 'pending'");
-        const [drawRes] = await pool.query(
-            "INSERT INTO draws (draw_date, winning_numbers, status) VALUES (?, ?, 'pending')",
-            [drawDate, winningStr]
-        );
-        const drawId = drawRes.insertId;
-
-        // Fetch all user scores for current period (mocking logic by fetching all active users' latest 5 scores)
-        const [users] = await pool.query("SELECT id FROM users WHERE is_admin = FALSE");
+        await supabase.from('draws').delete().eq('status', 'pending');
         
-        await pool.query("DELETE FROM winners WHERE draw_id = ?", [drawId]); // clear possible old pending
+        const { data: drawRes, error: dErr } = await supabase.from('draws').insert([{ draw_date: drawDate, winning_numbers: winningStr, status: 'pending' }]).select();
+        if (dErr) throw dErr;
+        const drawId = drawRes[0].id;
+
+        // Fetch all active users
+        const { data: users } = await supabase.from('users').select('id').eq('is_admin', false);
+        
+        await supabase.from('winners').delete().eq('draw_id', drawId); // clear possible old pending
 
         let winners5 = 0, winners4 = 0, winners3 = 0;
 
-        for (const u of users) {
-             const [scores] = await pool.query('SELECT score FROM scores WHERE user_id = ? ORDER BY date DESC LIMIT 5', [u.id]);
-             if (scores.length > 0) {
-                 const userNums = scores.map(s => s.score);
-                 let matchCount = 0;
-                 userNums.forEach(un => {
-                     if (numbers.includes(un)) matchCount++;
-                 });
+        if (users) {
+            for (const u of users) {
+                const { data: scores } = await supabase.from('scores').select('score').eq('user_id', u.id).order('date', { ascending: false }).limit(5);
+                
+                if (scores && scores.length > 0) {
+                    const userNums = scores.map(s => s.score);
+                    let matchCount = 0;
+                    userNums.forEach(un => {
+                        if (numbers.includes(un)) matchCount++;
+                    });
 
-                 if (matchCount >= 3) {
-                     let amount = 0;
-                     if (matchCount === 3) { amount = 5000; winners3++; }
-                     if (matchCount === 4) { amount = 25000; winners4++; }
-                     if (matchCount === 5) { amount = 100000; winners5++; }
+                    if (matchCount >= 3) {
+                        let amount = 0;
+                        if (matchCount === 3) { amount = 5000; winners3++; }
+                        if (matchCount === 4) { amount = 25000; winners4++; }
+                        if (matchCount === 5) { amount = 100000; winners5++; }
 
-                     await pool.query(
-                         "INSERT INTO winners (user_id, draw_id, match_count, amount, status) VALUES (?, ?, ?, ?, 'pending')",
-                         [u.id, drawId, matchCount, amount]
-                     );
-                 }
-             }
+                        await supabase.from('winners').insert([{ user_id: u.id, draw_id: drawId, match_count: matchCount, amount: amount, status: 'pending' }]);
+                    }
+                }
+            }
         }
 
         res.json({ success: true, numbers, winners5, winners4, winners3, drawId });
@@ -166,7 +164,7 @@ router.post('/draws/simulate', async (req, res) => {
 
 router.post('/draws/:id/publish', async (req, res) => {
     try {
-        await pool.query("UPDATE draws SET status = 'published' WHERE id = ?", [req.params.id]);
+        await supabase.from('draws').update({ status: 'published' }).eq('id', req.params.id);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -178,7 +176,7 @@ router.post('/draws/:id/publish', async (req, res) => {
 router.post('/winners/:id/status', async (req, res) => {
     const { status } = req.body;
     try {
-        await pool.query('UPDATE winners SET status = ? WHERE id = ?', [status, req.params.id]);
+        await supabase.from('winners').update({ status: status }).eq('id', req.params.id);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -189,7 +187,7 @@ router.post('/winners/:id/status', async (req, res) => {
 // ===================== USER MANAGEMENT =====================
 router.post('/users/:id/delete', async (req, res) => {
     try {
-        await pool.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+        await supabase.from('users').delete().eq('id', req.params.id);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -199,10 +197,11 @@ router.post('/users/:id/delete', async (req, res) => {
 
 router.get('/users/:id/data', async (req, res) => {
     try {
-        const [users] = await pool.query('SELECT id, first_name, last_name, email, plan FROM users WHERE id = ?', [req.params.id]);
-        const [scores] = await pool.query('SELECT * FROM scores WHERE user_id = ? ORDER BY date DESC', [req.params.id]);
-        if(users.length === 0) return res.status(404).json({ error: 'User not found' });
-        res.json({ user: users[0], scores });
+        const { data: users } = await supabase.from('users').select('id, first_name, last_name, email, plan').eq('id', req.params.id);
+        const { data: scores } = await supabase.from('scores').select('*').eq('user_id', req.params.id).order('date', { ascending: false });
+        
+        if(!users || users.length === 0) return res.status(404).json({ error: 'User not found' });
+        res.json({ user: users[0], scores: scores || [] });
     } catch(err) {
         res.status(500).json({ error: 'Internal error' });
     }
@@ -211,7 +210,7 @@ router.get('/users/:id/data', async (req, res) => {
 router.post('/users/:id/edit', async (req, res) => {
     const { first_name, last_name, email, plan } = req.body;
     try {
-        await pool.query('UPDATE users SET first_name=?, last_name=?, email=?, plan=? WHERE id=?', [first_name, last_name, email, plan, req.params.id]);
+        await supabase.from('users').update({ first_name, last_name, email, plan }).eq('id', req.params.id);
         res.json({ success: true });
     } catch(err) {
         res.status(500).json({ error: 'Failed to update user' });
@@ -221,7 +220,7 @@ router.post('/users/:id/edit', async (req, res) => {
 router.post('/scores/:id/edit', async (req, res) => {
     const { score, course_name, date } = req.body;
     try {
-        await pool.query('UPDATE scores SET score=?, course_name=?, date=? WHERE id=?', [score, course_name, date, req.params.id]);
+        await supabase.from('scores').update({ score: parseInt(score), course_name, date }).eq('id', req.params.id);
         res.json({ success: true });
     } catch(err) {
         res.status(500).json({ error: 'Failed to update score' });
@@ -230,7 +229,7 @@ router.post('/scores/:id/edit', async (req, res) => {
 
 router.post('/scores/:id/delete', async (req, res) => {
     try {
-        await pool.query('DELETE FROM scores WHERE id=?', [req.params.id]);
+        await supabase.from('scores').delete().eq('id', req.params.id);
         res.json({ success: true });
     } catch(err) {
         res.status(500).json({ error: 'Failed to delete score' });
@@ -241,7 +240,7 @@ router.post('/scores/:id/delete', async (req, res) => {
 router.post('/charities/add', async (req, res) => {
     const { name, category, description } = req.body;
     try {
-        await pool.query('INSERT INTO charities (name, category, description, supporters_count, raised_amount) VALUES (?, ?, ?, 0, 0)', [name, category, description]);
+        await supabase.from('charities').insert([{ name, category, description, supporters_count: 0, raised_amount: 0 }]);
         res.redirect('/admin');
     } catch(err) {
         res.status(500).send('Failed adding charity');
@@ -251,7 +250,7 @@ router.post('/charities/add', async (req, res) => {
 router.post('/charities/:id/edit', async (req, res) => {
     const { name, category, description } = req.body;
     try {
-        await pool.query('UPDATE charities SET name=?, category=?, description=? WHERE id=?', [name, category, description, req.params.id]);
+        await supabase.from('charities').update({ name, category, description }).eq('id', req.params.id);
         res.redirect('/admin');
     } catch(err) {
         res.status(500).send('Failed updating charity');
@@ -260,7 +259,7 @@ router.post('/charities/:id/edit', async (req, res) => {
 
 router.post('/charities/:id/delete', async (req, res) => {
     try {
-        await pool.query('DELETE FROM charities WHERE id=?', [req.params.id]);
+        await supabase.from('charities').delete().eq('id', req.params.id);
         res.json({ success: true });
     } catch(err) {
         res.status(500).json({ error: 'Failed to delete charity' });

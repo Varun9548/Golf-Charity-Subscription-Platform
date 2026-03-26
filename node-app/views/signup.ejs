@@ -29,6 +29,9 @@
                     <input type="hidden" name="plan" id="hiddenPlan" value="monthly">
                     <input type="hidden" name="charity_id" id="hiddenCharityId" value="">
                     <input type="hidden" name="givingPct" id="hiddenGivingPct" value="10">
+                    <input type="hidden" name="razorpay_payment_id" id="rzp_payment_id" value="">
+                    <input type="hidden" name="razorpay_order_id" id="rzp_order_id" value="">
+                    <input type="hidden" name="razorpay_signature" id="rzp_signature" value="">
                     
                     <div class="signup-progress">
                         <div class="signup-step active" data-step="1">
@@ -108,8 +111,7 @@
                         
                         <div class="form-nav-buttons">
                             <button type="button" class="btn-form-ghost" onclick="goToStep(2)">Back</button>
-                            <!-- Submit instead of going to step 4 since we skip payment processing logic -->
-                            <button type="submit" class="btn-form-primary">Complete Signup</button>
+                            <button type="button" class="btn-form-primary" onclick="initiateRazorpayPayment()">Pay & Complete Signup</button>
                         </div>
                     </div>
                 </form>
@@ -135,5 +137,82 @@
                 document.getElementById('hiddenCharityId').value = firstCharity.getAttribute('data-charity');
             }
         });
+
+        // Razorpay Payment Integration Code
+        async function initiateRazorpayPayment() {
+            // Basic form validation for step 1
+            const firstName = document.getElementById('firstName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if(!firstName || !email || !password) {
+                alert('Please fill out all account details in Step 1!');
+                return goToStep(1);
+            }
+
+            const plan = document.getElementById('hiddenPlan').value;
+            
+            try {
+                // 1. Create order on backend
+                const response = await fetch('/auth/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan })
+                });
+                const data = await response.json();
+                
+                if (!data.success) {
+                    alert('Error creating payment order. Try again.');
+                    return;
+                }
+
+                // 2. Configure Razorpay Pop-up
+                // If it's a mock response (due to missing API keys) simulate the success:
+                if (data.mock) {
+                    alert('Razorpay test keys are dummy strings. Simulating successful checkout for the demo...');
+                    document.getElementById('rzp_payment_id').value = 'pay_mock_' + Date.now();
+                    document.getElementById('rzp_order_id').value = data.order_id;
+                    document.getElementById('rzp_signature').value = 'mock_signature_valid';
+                    document.getElementById('mainSignupForm').submit();
+                    return;
+                }
+
+                const options = {
+                    "key": "rzp_test_zH0bXz9s8PzM0j", // Matches backend fallback key
+                    "amount": data.amount, 
+                    "currency": "INR",
+                    "name": "GreenHeart Golf",
+                    "description": "Subscription Plan: " + plan,
+                    "image": "https://www.shutterstock.com/image-vector/golf-ball-on-tee-icon-600w-1926678206.jpg",
+                    "order_id": data.order_id,
+                    "handler": function (response){
+                        // 3. On Success -> Inject values into hidden inputs
+                        document.getElementById('rzp_payment_id').value = response.razorpay_payment_id;
+                        document.getElementById('rzp_order_id').value = response.razorpay_order_id;
+                        document.getElementById('rzp_signature').value = response.razorpay_signature;
+                        
+                        // Submit the main signup form
+                        document.getElementById('mainSignupForm').submit();
+                    },
+                    "prefill": {
+                        "name": firstName + " " + document.getElementById('lastName').value,
+                        "email": email
+                    },
+                    "theme": {
+                        "color": "#10b981"
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.on('payment.failed', function (response){
+                    alert("Payment Failed: " + response.error.description);
+                });
+                rzp.open();
+
+            } catch(e) {
+                console.error(e);
+                alert('Network Error. Please try again.');
+            }
+        }
     </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <%- include('partials/footer') %>
